@@ -1,0 +1,153 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume Builder</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    .container {
+      display: flex;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+    form, .resume {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 600px;
+    }
+    .resume {
+      border: 2px solid #ccc;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 8px;
+      margin: 10px 0;
+    }
+    h2 {
+      border-bottom: 2px solid #0077cc;
+      padding-bottom: 5px;
+    }
+    .download-btn {
+      background-color: #0077cc;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+    #profile-pic {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+  <h1>Resume Builder</h1>
+  <div class="container">
+    <form id="resume-form">
+      <h2>Basic Info</h2>
+      <input type="text" id="name" placeholder="Full Name" required />
+      <input type="text" id="title" placeholder="Job Title" required />
+      <input type="text" id="phone" placeholder="Phone" required />
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="text" id="address" placeholder="Address" required /><h2>Profile Picture</h2>
+  <input type="file" id="imageUpload" accept="image/*" />
+
+  <h2>Theme</h2>
+  <select id="theme">
+    <option value="light">Light</option>
+    <option value="dark">Dark</option>
+    <option value="blue">Blue</option>
+  </select>
+
+  <h2>Education</h2>
+  <textarea id="education" placeholder="e.g. MBA, University, Year"></textarea>
+
+  <h2>Skills</h2>
+  <textarea id="skills" placeholder="e.g. Project Management, Leadership"></textarea>
+
+  <h2>Languages</h2>
+  <textarea id="languages" placeholder="e.g. English (Fluent), German (Basics)"></textarea>
+
+  <h2>Work Experience</h2>
+  <textarea id="experience" placeholder="e.g. Company, Role, Years, Responsibilities"></textarea>
+</form>
+
+<div class="resume" id="resume-preview">
+  <img id="profile-pic" src="" alt="" />
+  <h2 id="r-name"></h2>
+  <p id="r-title"></p>
+  <p id="r-contact"></p>
+  <h3>Education</h3>
+  <p id="r-education"></p>
+  <h3>Skills</h3>
+  <p id="r-skills"></p>
+  <h3>Languages</h3>
+  <p id="r-languages"></p>
+  <h3>Work Experience</h3>
+  <p id="r-experience"></p>
+  <button onclick="downloadPDF()" class="download-btn">Download PDF</button>
+</div>
+
+  </div>  <script>
+    const fields = ["name", "title", "phone", "email", "address", "education", "skills", "languages", "experience"];
+    fields.forEach(id => {
+      document.getElementById(id).addEventListener("input", updatePreview);
+    });
+
+    document.getElementById("imageUpload").addEventListener("change", function () {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          document.getElementById("profile-pic").src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    document.getElementById("theme").addEventListener("change", function () {
+      const preview = document.getElementById("resume-preview");
+      preview.style.backgroundColor = this.value === 'dark' ? '#222' : this.value === 'blue' ? '#e0f0ff' : 'white';
+      preview.style.color = this.value === 'dark' ? 'white' : 'black';
+    });
+
+    function updatePreview() {
+      document.getElementById("r-name").innerText = document.getElementById("name").value;
+      document.getElementById("r-title").innerText = document.getElementById("title").value;
+      document.getElementById("r-contact").innerText =
+        document.getElementById("phone").value + " | " +
+        document.getElementById("email").value + " | " +
+        document.getElementById("address").value;
+
+      document.getElementById("r-education").innerText = document.getElementById("education").value;
+      document.getElementById("r-skills").innerText = document.getElementById("skills").value;
+      document.getElementById("r-languages").innerText = document.getElementById("languages").value;
+      document.getElementById("r-experience").innerText = document.getElementById("experience").value;
+    }
+
+    function downloadPDF() {
+      html2canvas(document.getElementById("resume-preview")).then(canvas => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jspdf.jsPDF("p", "mm", "a4");
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+        pdf.save("resume.pdf");
+      });
+    }
+  </script></body>
+</html>
